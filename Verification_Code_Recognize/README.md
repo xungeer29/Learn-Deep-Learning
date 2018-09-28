@@ -12,7 +12,7 @@ python2 / python3
 
 * cteate_image.py：生成由大小写字母与数字组成的四位验证码
 
-![验证码](./Figure/0GXh.png)
+  ![验证码](./Figure/0GXh.png)
 
 * gen_captcha.py：生成验证码，主要用于训练时调用自动生成训练集
 

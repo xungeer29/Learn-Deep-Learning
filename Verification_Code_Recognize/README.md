@@ -24,4 +24,4 @@ python2 / python3
 
 ## OTHERS
 
-
+大概训练 10000 steps 左右时，acc 会达到 0.9 以上

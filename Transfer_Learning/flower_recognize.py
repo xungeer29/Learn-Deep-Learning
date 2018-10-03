@@ -32,6 +32,8 @@ CACHE_DIR = './bottleneck/'
 # 在这个文件夹中每一个子文件夹代表一个需要区分的类别，每个子文件夹中存放了对应类别的图片。
 INPUT_DATA = './flower_photos/'
 
+log_dir = './log/'
+
 # 验证的数据百分比
 VALIDATION_PERCENTAGE = 10
 # 测试的数据百分比
@@ -39,7 +41,7 @@ TEST_PERCENTAGE = 10
 
 # 定义神经网络的设置
 LEARNING_RATE = 0.01
-STEPS = 400000
+STEPS = 4000
 BATCH = 100
 
 # 这个函数从数据文件夹中读取所有的图片列表并按训练、验证、测试数据分开。
@@ -124,6 +126,7 @@ def get_bottlenect_path(image_lists, label_name, index, category):
 def run_bottleneck_on_image(sess, image_data, image_data_tensor, bottleneck_tensor):
     # 这个过程实际上就是将当前图片作为输入计算瓶颈张量的值。这个瓶颈张量的值就是这张图片的新的特征向量。
     bottleneck_values = sess.run(bottleneck_tensor, {image_data_tensor: image_data})
+    tf.summary.image('bottleneck', bottleneck_values, 9)
     # 经过卷积神经网络处理的结果是一个四维数组，需要将这个结果压缩成一个特征向量（一维数组）
     bottleneck_values = np.squeeze(bottleneck_values)
     return bottleneck_values
@@ -154,6 +157,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpe
         with open(bottleneck_path, 'w') as bottleneck_file:
             bottleneck_file.write(bottleneck_string)
     else:
+
         # 直接从文件中获取图片相应的特征向量。
         with open(bottleneck_path, 'r') as bottleneck_file:
             bottleneck_string = bottleneck_file.read()
@@ -206,7 +210,6 @@ def main(_):
     n_classes = len(image_lists.keys())
     # 读取已经训练好的Inception-v3模型。
     # 谷歌训练好的模型保存在了GraphDef Protocol Buffer中，里面保存了每一个节点取值的计算方法以及变量的取值。
-    # TensorFlow模型持久化的问题在第5章中有详细的介绍。
     with gfile.FastGFile(os.path.join(MODEL_DIR, MODEL_FILE), 'rb') as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
@@ -223,24 +226,37 @@ def main(_):
         weights = tf.Variable(tf.truncated_normal([BOTTLENECK_TENSOR_SIZE, n_classes], stddev=0.001))
         biases = tf.Variable(tf.zeros([n_classes]))
         logits = tf.matmul(bottleneck_input, weights) + biases
+
+        # 记录节点在经过激活函数前的分布
+        tf.summary.histogram('final_layer' + '/pre_activation', logits)
+
         final_tensor = tf.nn.softmax(logits)
+
+        # 记录在激活之后的分布
+        tf.summary.histogram('final_layer' + '/activations', final_tensor)
+
+
     # 定义交叉熵损失函数
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=ground_truth_input)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
+    tf.summary.scalar('cross_entropy', cross_entropy_mean)
     train_step = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(cross_entropy_mean)
     # 计算正确率
     with tf.name_scope('evaluation'):
         correct_prediction = tf.equal(tf.argmax(final_tensor, 1), tf.argmax(ground_truth_input, 1))
         evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.summary.scalar('evaluation', evaluation_step)
 
+    merged = tf.summary.merge_all()
     with tf.Session() as sess:
+        writer = tf.summary.FileWriter(log_dir, tf.get_default_graph())
         tf.global_variables_initializer().run()
         # 训练过程
         for i in range(STEPS):
             # 每次获取一个batch的训练数据
             train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
                 sess, n_classes, image_lists, BATCH, 'training', jpeg_data_tensor, bottleneck_tensor)
-            sess.run(train_step, feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
+            _, summary = sess.run([train_step, merged], feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})
             # 在验证集上测试正确率。
             if i%100 == 0 or i+1 == STEPS:
                 validation_bottlenecks, validation_ground_truth = get_random_cached_bottlenecks(
@@ -249,12 +265,17 @@ def main(_):
                     bottleneck_input:validation_bottlenecks, ground_truth_input: validation_ground_truth})
                 print('Step %d: Validation accuracy on random sampled %d examples = %.1f%%'
                       % (i, BATCH, validation_accuracy*100))
+                # 将所有日志写入文件
+                writer.add_summary(summary, i)
         # 在最后的测试数据上测试正确率
         test_bottlenecks, test_ground_truth = get_test_bottlenecks(sess, image_lists, n_classes,
                                                                        jpeg_data_tensor, bottleneck_tensor)
         test_accuracy = sess.run(evaluation_step, feed_dict={bottleneck_input: test_bottlenecks,
                                                                  ground_truth_input: test_ground_truth})
         print('Final test accuracy = %.1f%%' % (test_accuracy * 100))
+
+
+    writer.close()
 
 
 if __name__ == '__main__':

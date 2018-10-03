@@ -18,6 +18,7 @@
 		-roses
 		-sunflowers
 		-tulips
+	-log	//存放用于tensorboard可视化的events信息
 	-flower_recognize.py
 ```
 
@@ -32,12 +33,38 @@
 * gfile.FastGFile(image_path, 'rb').read()
 
 　读取图像，可以直接处理成tensorflow需要的张量形式，如果使用opencv等读取，还需要转化成tensorflow内部的张量形式；
- 
- * writer = tf.summary.FileWriter(log_dir, tf.get_default_graph())
- 
-   保存计算图
+
+## tensorboard
+* writer = tf.summary.FileWriter(log_dir, tf.get_default_graph())
+   
+   保存计算图，同时也提供写入其他日志文件的writer.add_summary(), 放在　with tf.Session() as sess:的下面
   
    ![graph](./figures/graph_run=.png)
+   
+*  tf.summary.scalar('cross_entropy', cross_entropy_mean)
+
+　　折线图，放在定义该变量位置的下面，一般**交叉熵损失，准确率**等都使用该函数
+  
+  　![scalar](./figures/scalar.png)
+  
+* tf.summary.histogram('final_layer' + '/pre_activation', logits)
+　　
+    将张量保存为直方图，可以查看张量数据随着迭代轮数变化的趋势，放在定义该张量位置的下面，
+    一般查看**权重w，偏置b和特征张量y**的时候使用；
+    
+    ![histogram](./figures/histogram.png)
+    
+* merged = tf.summary.merge_all()
+
+  整理所有的张量，放在with tf.Session() as sess:的上一行，在run训练时一起run，
+  例如，_, summary = sess.run([train_step, merged], feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})，然后在for i in range(STEPS):　时要执行写操作　writer.add_summary(summary, i)，使其每隔n步写入一次数据；
+  
+* writer.close() 
+    卸载sess会话外
+  
+
+    
+    
 
 ## DRAWBACKS:
 * 每次运行都要重新划分整理数据集，所需时间过长

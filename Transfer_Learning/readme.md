@@ -20,6 +20,20 @@
 		-tulips
 	-flower_recognize.py
 ```
+
+## Code
+* 先将图片过一遍inception-v3,　得到BOTTLENECK_TENSOR_NAME的权重，然后自己在加了一个分类的全连接层，
+定义了损失函数与优化方法，得到最终的分类输出；
+
+* bottleneck_values = sess.run(bottleneck_tensor, {image_data_tensor: image_data})
+
+　将图像过一遍inception-v3，得到图片的 feature map;
+ 
+* gfile.FastGFile(image_path, 'rb').read()
+
+　读取图像，可以直接处理成tensorflow需要的张量形式，如果使用opencv等读取，还需要转化成tensorflow内部的张量形式；
+
+
 ## ENVS
 python == 2.7
 

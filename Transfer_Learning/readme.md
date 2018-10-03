@@ -29,3 +29,5 @@ tensorflow == 1.2.1
 数据集下载地址：[flower_photos.tgz](http://download.tensorflow.org/example_images/flower_photos.tgz)
 
 模型文件下载地址：[inception_dec_2015.zip](https://storage.googleapis.com/download.tensorflow.org/models/inception_dec_2015.zip) (需要翻墙)
+
+知乎lqfarmer写的上关于迁移学习的[综述](https://zhuanlan.zhihu.com/p/27368456)(引用不正规，如有侵权，请联系删除！)

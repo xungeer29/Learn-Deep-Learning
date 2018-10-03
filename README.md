@@ -24,3 +24,11 @@ deep learning 学习总结
 * 动态学习律
 * 多线程
 * 权重衰减
+
+## Transfer_Learning
+使用预训练的Ｉnception模型来识别花卉种类
+
+可以学到：
+
+* **迁移学习**
+* 模型加载

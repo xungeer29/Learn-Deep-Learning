@@ -54,18 +54,19 @@
     
     ![histogram](./figures/histogram.png)
     
+*　tf.summary.image('bottleneck', bottleneck_values, 9)
+
+    可视化张量，放在想要查看的张量下面，要先使用tf.reshape(x, [-1, 28, 28, 1])将张量变为
+    张量变为四维，第一个参数是命名，最后一个参数为要查看的图像最大数量；
+    
 * merged = tf.summary.merge_all()
 
   整理所有的张量，放在with tf.Session() as sess:的上一行，在run训练时一起run，
   例如，_, summary = sess.run([train_step, merged], feed_dict={bottleneck_input: train_bottlenecks, ground_truth_input: train_ground_truth})，然后在for i in range(STEPS):　时要执行写操作　writer.add_summary(summary, i)，使其每隔n步写入一次数据；
   
 * writer.close() 
-    卸载sess会话外
+    写在sess会话外
   
-
-    
-    
-
 ## DRAWBACKS:
 * 每次运行都要重新划分整理数据集，所需时间过长
 * 网络能够很快收敛，但无法达到很高的正确率

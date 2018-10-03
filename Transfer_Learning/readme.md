@@ -32,7 +32,16 @@
 * gfile.FastGFile(image_path, 'rb').read()
 
 　读取图像，可以直接处理成tensorflow需要的张量形式，如果使用opencv等读取，还需要转化成tensorflow内部的张量形式；
+ 
+ * writer = tf.summary.FileWriter(log_dir, tf.get_default_graph())
+ 
+  保存计算图
+  
+  ![graph](./figures/graph_run=.png)
 
+## DRAWBACKS:
+* 每次运行都要重新划分整理数据集，所需时间过长
+* 网络能够很快收敛，但无法达到很高的正确率
 
 ## ENVS
 python == 2.7

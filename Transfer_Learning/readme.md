@@ -35,9 +35,9 @@
  
  * writer = tf.summary.FileWriter(log_dir, tf.get_default_graph())
  
-  保存计算图
+   保存计算图
   
-  ![graph](./figures/graph_run=.png)
+   ![graph](./figures/graph_run=.png)
 
 ## DRAWBACKS:
 * 每次运行都要重新划分整理数据集，所需时间过长

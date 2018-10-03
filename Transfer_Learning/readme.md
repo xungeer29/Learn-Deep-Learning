@@ -54,7 +54,7 @@
     
     ![histogram](./figures/histogram.png)
     
-*　tf.summary.image('bottleneck', bottleneck_values, 9)
+* tf.summary.image('bottleneck', bottleneck_values, 9)
 
     可视化张量，放在想要查看的张量下面，要先使用tf.reshape(x, [-1, 28, 28, 1])将张量变为
     张量变为四维，第一个参数是命名，最后一个参数为要查看的图像最大数量；

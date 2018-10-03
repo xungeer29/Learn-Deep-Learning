@@ -27,7 +27,7 @@
 
 * bottleneck_values = sess.run(bottleneck_tensor, {image_data_tensor: image_data})
 
- 将图像过一遍inception-v3，得到图片的 feature map;
+  将图像过一遍inception-v3，得到图片的 feature map;
  
 * gfile.FastGFile(image_path, 'rb').read()
 

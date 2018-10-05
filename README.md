@@ -21,7 +21,7 @@ deep learning 学习总结
 * 数据输入(tf.train.string_input_producer)
 * tensorboard可视化
 * 多 GPU 训练
-* 动态学习律
+* 动态学习率
 * 多线程
 * 权重衰减
 
